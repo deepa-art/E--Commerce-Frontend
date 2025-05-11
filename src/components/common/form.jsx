@@ -17,6 +17,9 @@ function CommonForm({
   onSubmit,
   buttonText,
   isBtnDisabled,
+  className, // Added to handle form-level styling
+  inputClassName, // Added to handle input-level styling
+  labelClassName, // Added to handle label-level styling
 }) {
   function renderInputsByComponentType(getControlItem) {
     let element = null;
@@ -26,6 +29,7 @@ function CommonForm({
       case "input":
         element = (
           <Input
+            className={inputClassName} // Apply input styling
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
             id={getControlItem.name}
@@ -39,7 +43,6 @@ function CommonForm({
             }
           />
         );
-
         break;
       case "select":
         element = (
@@ -66,11 +69,11 @@ function CommonForm({
             </SelectContent>
           </Select>
         );
-
         break;
       case "textarea":
         element = (
           <Textarea
+            className={inputClassName} // Apply input styling
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
             id={getControlItem.id}
@@ -83,12 +86,11 @@ function CommonForm({
             }
           />
         );
-
         break;
-
       default:
         element = (
           <Input
+            className={inputClassName} // Apply input styling
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
             id={getControlItem.name}
@@ -109,11 +111,13 @@ function CommonForm({
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} className={className}>
       <div className="flex flex-col gap-3">
         {formControls.map((controlItem) => (
           <div className="grid w-full gap-1.5" key={controlItem.name}>
-            <Label className="mb-1">{controlItem.label}</Label>
+            <Label className={`mb-1 ${labelClassName}`}>
+              {controlItem.label}
+            </Label>
             {renderInputsByComponentType(controlItem)}
           </div>
         ))}

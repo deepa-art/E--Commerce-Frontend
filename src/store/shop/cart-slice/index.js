@@ -17,7 +17,6 @@ export const addToCart = createAsyncThunk(
         quantity,
       }
     );
-
     return response.data;
   }
 );
@@ -28,7 +27,6 @@ export const fetchCartItems = createAsyncThunk(
     const response = await axios.get(
       `http://localhost:3001/api/shop/cart/get/${userId}`
     );
-
     return response.data;
   }
 );
@@ -39,7 +37,6 @@ export const deleteCartItem = createAsyncThunk(
     const response = await axios.delete(
       `http://localhost:3001/api/shop/cart/${userId}/${productId}`
     );
-
     return response.data;
   }
 );
@@ -55,7 +52,6 @@ export const updateCartQuantity = createAsyncThunk(
         quantity,
       }
     );
-
     return response.data;
   }
 );
@@ -63,7 +59,11 @@ export const updateCartQuantity = createAsyncThunk(
 const shoppingCartSlice = createSlice({
   name: "shoppingCart",
   initialState,
-  reducers: {},
+  reducers: {
+    clearCart(state) {
+      state.cartItems = []; // Reset cart items to empty array
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(addToCart.pending, (state) => {
@@ -113,4 +113,5 @@ const shoppingCartSlice = createSlice({
   },
 });
 
+export const { clearCart } = shoppingCartSlice.actions;
 export default shoppingCartSlice.reducer;
