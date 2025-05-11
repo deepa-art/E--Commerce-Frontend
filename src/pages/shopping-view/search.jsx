@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+import { Search } from "lucide-react";
 
 function SearchProducts() {
   const [keyword, setKeyword] = useState("");
@@ -19,17 +20,17 @@ function SearchProducts() {
   const dispatch = useDispatch();
   const { searchResults } = useSelector((state) => state.shopSearch);
   const { productDetails } = useSelector((state) => state.shopProducts);
-
   const { user } = useSelector((state) => state.auth);
-
   const { cartItems } = useSelector((state) => state.shopCart);
   const { toast } = useToast();
+
   useEffect(() => {
-    if (keyword && keyword.trim() !== "" && keyword.trim().length > 3) {
-      setTimeout(() => {
+    if (keyword && keyword.trim() !== "" && keyword.trim().length > 2) {
+      const timer = setTimeout(() => {
         setSearchParams(new URLSearchParams(`?keyword=${keyword}`));
         dispatch(getSearchResults(keyword));
-      }, 1000);
+      }, 500);
+      return () => clearTimeout(timer);
     } else {
       setSearchParams(new URLSearchParams(`?keyword=${keyword}`));
       dispatch(resetSearchResults());
@@ -37,7 +38,6 @@ function SearchProducts() {
   }, [keyword]);
 
   function handleAddtoCart(getCurrentProductId, getTotalStock) {
-    console.log(cartItems);
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -51,7 +51,6 @@ function SearchProducts() {
             title: `Only ${getQuantity} quantity can be added for this item`,
             variant: "destructive",
           });
-
           return;
         }
       }
@@ -67,14 +66,13 @@ function SearchProducts() {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
         toast({
-          title: "Product is added to cart",
+          title: "Product added to cart",
         });
       }
     });
   }
 
   function handleGetProductDetails(getCurrentProductId) {
-    console.log(getCurrentProductId);
     dispatch(fetchProductDetails(getCurrentProductId));
   }
 
@@ -82,33 +80,77 @@ function SearchProducts() {
     if (productDetails !== null) setOpenDetailsDialog(true);
   }, [productDetails]);
 
-  console.log(searchResults, "searchResults");
-
   return (
-    <div className="container mx-auto md:px-6 px-4 py-8">
-      <div className="flex justify-center mb-8">
-        <div className="w-full flex items-center">
-          <Input
-            value={keyword}
-            name="keyword"
-            onChange={(event) => setKeyword(event.target.value)}
-            className="py-6"
-            placeholder="Search Products..."
-          />
+    <div
+      className="relative min-h-screen w-full"
+      style={{ background: 'transparent !important', backgroundColor: 'transparent !important' }}
+    >
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 -z-10 overflow-hidden"
+        style={{ background: 'url(/login.avif) no-repeat right center/cover', backgroundColor: '#000000' }}
+      >
+        {/* Fallback color if image fails to load */}
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-20 container mx-auto px-4 py-8 md:py-12 lg:py-16 bg-transparent">
+        {/* Search Header */}
+        <div className="max-w-4xl mx-auto mb-12 bg-transparent">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            Discover Amazing Products
+          </h1>
+          
+          <div className="relative bg-transparent">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-6 w-6 text-gray-400" />
+            </div>
+            <Input
+              value={keyword}
+              name="keyword"
+              onChange={(event) => setKeyword(event.target.value)}
+              className="w-full py-6 pl-10 text-lg border-2 border-gray-300 focus:border-primary rounded-lg shadow-sm bg-transparent"
+              placeholder="Search for products, brands, categories..."
+            />
+          </div>
+        </div>
+
+        {/* Results Section */}
+        <div className="w-full bg-transparent">
+          {!searchResults.length ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-transparent">
+              <div className="bg-gray-100 p-6 rounded-full mb-6">
+                <Search className="h-12 w-12 text-gray-500" />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                {keyword ? "No results found" : "Start searching"}
+              </h2>
+              <p className="text-gray-600 max-w-md text-center">
+                {keyword 
+                  ? "Try different keywords or check for spelling mistakes"
+                  : "Enter keywords to find products you're looking for"}
+              </p>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                Showing {searchResults.length} results for "{keyword}"
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 bg-transparent">
+                {searchResults.map((item) => (
+                  <ShoppingProductTile
+                    key={item.id}
+                    handleAddtoCart={handleAddtoCart}
+                    product={item}
+                    handleGetProductDetails={handleGetProductDetails}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
-      {!searchResults.length ? (
-        <h1 className="text-5xl font-extrabold">No result found!</h1>
-      ) : null}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {searchResults.map((item) => (
-          <ShoppingProductTile
-            handleAddtoCart={handleAddtoCart}
-            product={item}
-            handleGetProductDetails={handleGetProductDetails}
-          />
-        ))}
-      </div>
+
       <ProductDetailsDialog
         open={openDetailsDialog}
         setOpen={setOpenDetailsDialog}
